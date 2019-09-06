@@ -6,25 +6,46 @@ import { Menu, Icon, Modal, Form, Input, Button} from 'semantic-ui-react';
 
 class Channels extends React.Component {
   state = {
+    activeChannel: '',
     user: this.props.currentUser,
     channels: [],
     channelName: '',
     channelDetails: '',
     channelsRef: firebase.database().ref('channels'),
-    modal: false
+    modal: false,
+    firstLoad: true
   };
 
   componentDidMount() {
     this.addListeners();
-  }
+  };
+
+  // When our component unmounts, that we remove listeners for events that will not take place (new channels etc)
+  componentWillUnmount() {
+    this.removeListeners();
+  };
 
   addListeners = () => {
     let loadedChannels = [];
     this.state.channelsRef.on('child_added', snap => {
       loadedChannels.push(snap.val());
-      this.setState({ channels: loadedChannels });
-    })
-  }
+      this.setState({ channels: loadedChannels }, () => this.setFirstChannel());
+    });
+  };
+
+  removeListeners = () => {
+    this.state.channelsRef.off();
+  };
+
+  // Set default channel on initial view
+  setFirstChannel = () => {
+    const firstChannel = this.state.channels[0];
+    if (this.state.firstLoad && this.state.channels.length > 0) {
+      this.props.setCurrentChannel(firstChannel);
+      this.setActiveChannel(firstChannel);
+    }
+    this.setState({ firstLoad: false });
+  };
 
   addChannel = () => {
     const { channelsRef, channelName, channelDetails, user } = this.state;
@@ -66,17 +87,23 @@ class Channels extends React.Component {
   };
 
   changeChannel = channel => {
+    this.setActiveChannel(channel);
     this.props.setCurrentChannel(channel);
-  }
+  };
+
+  setActiveChannel = channel => {
+    this.setState({ activeChannel: channel.id });
+  };
 
   displayChannels = channels => (
     channels.length > 0 && 
     channels.map(channel => (
       <Menu.Item
         key={channel.id}
-        onClick={() => console.log(channel)}
+        onClick={() => this.changeChannel(channel)}
         name={channel.name}
         style={{ opacity: 0.7 }}
+        active={channel.id === this.state.activeChannel}
       >
         # {channel.name}
       </Menu.Item>
