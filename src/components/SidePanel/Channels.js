@@ -1,33 +1,32 @@
-import React from 'react';
-import firebase from '../../firebase';
-import { connect } from 'react-redux';
-import { setCurrentChannel } from '../../actions';
-import { Menu, Icon, Modal, Form, Input, Button} from 'semantic-ui-react';
+import React from "react";
+import firebase from "../../firebase";
+import { connect } from "react-redux";
+import { setCurrentChannel } from "../../actions";
+import { Menu, Icon, Modal, Form, Input, Button } from "semantic-ui-react";
 
 class Channels extends React.Component {
   state = {
-    activeChannel: '',
+    activeChannel: "",
     user: this.props.currentUser,
     channels: [],
-    channelName: '',
-    channelDetails: '',
-    channelsRef: firebase.database().ref('channels'),
+    channelName: "",
+    channelDetails: "",
+    channelsRef: firebase.database().ref("channels"),
     modal: false,
     firstLoad: true
   };
 
   componentDidMount() {
     this.addListeners();
-  };
+  }
 
-  // When our component unmounts, that we remove listeners for events that will not take place (new channels etc)
   componentWillUnmount() {
     this.removeListeners();
-  };
+  }
 
   addListeners = () => {
     let loadedChannels = [];
-    this.state.channelsRef.on('child_added', snap => {
+    this.state.channelsRef.on("child_added", snap => {
       loadedChannels.push(snap.val());
       this.setState({ channels: loadedChannels }, () => this.setFirstChannel());
     });
@@ -37,7 +36,6 @@ class Channels extends React.Component {
     this.state.channelsRef.off();
   };
 
-  // Set default channel on initial view
   setFirstChannel = () => {
     const firstChannel = this.state.channels[0];
     if (this.state.firstLoad && this.state.channels.length > 0) {
@@ -66,9 +64,9 @@ class Channels extends React.Component {
       .child(key)
       .update(newChannel)
       .then(() => {
-        this.setState({ channelName: '', channelDetails: '' });
+        this.setState({ channelName: "", channelDetails: "" });
         this.closeModal();
-        console.log('channnel added');
+        console.log("channel added");
       })
       .catch(err => {
         console.error(err);
@@ -79,7 +77,7 @@ class Channels extends React.Component {
     event.preventDefault();
     if (this.isFormValid(this.state)) {
       this.addChannel();
-    };
+    }
   };
 
   handleChange = event => {
@@ -95,8 +93,8 @@ class Channels extends React.Component {
     this.setState({ activeChannel: channel.id });
   };
 
-  displayChannels = channels => (
-    channels.length > 0 && 
+  displayChannels = channels =>
+    channels.length > 0 &&
     channels.map(channel => (
       <Menu.Item
         key={channel.id}
@@ -107,12 +105,13 @@ class Channels extends React.Component {
       >
         # {channel.name}
       </Menu.Item>
-    ))
-  )
+    ));
 
-  isFormValid = ({ channelName, channelDetails }) => channelName && channelDetails;
+  isFormValid = ({ channelName, channelDetails }) =>
+    channelName && channelDetails;
 
   openModal = () => this.setState({ modal: true });
+
   closeModal = () => this.setState({ modal: false });
 
   render() {
@@ -120,55 +119,56 @@ class Channels extends React.Component {
 
     return (
       <React.Fragment>
-        <Menu.Menu style={{ paddingBottom: '2em' }}>
+        <Menu.Menu style={{ paddingBottom: "2em" }}>
           <Menu.Item>
             <span>
               <Icon name="exchange" /> CHANNELS
-            </span>
-            ({ channels.length }) <Icon name="add" onClick={this.openModal}/>
+            </span>{" "}
+            ({channels.length}) <Icon name="add" onClick={this.openModal} />
           </Menu.Item>
           {this.displayChannels(channels)}
         </Menu.Menu>
 
+        {/* Add Channel Modal */}
         <Modal basic open={modal} onClose={this.closeModal}>
-          <Modal.Header>
-            Add a Channel
-          </Modal.Header>
-            <Modal.Content>
-              <Form onSubmit={this.handleSubmit}>
-                <Form.Field>
-                  <Input 
-                    fluid
-                    label="Name of Channel"
-                    name="channelName"
-                    onChange={this.handleChange}
-                  />
-                </Form.Field>
+          <Modal.Header>Add a Channel</Modal.Header>
+          <Modal.Content>
+            <Form onSubmit={this.handleSubmit}>
+              <Form.Field>
+                <Input
+                  fluid
+                  label="Name of Channel"
+                  name="channelName"
+                  onChange={this.handleChange}
+                />
+              </Form.Field>
 
-                <Form.Field>
-                  <Input 
-                    fluid
-                    label="About the channel"
-                    name="channelDetails"
-                    onChange={this.handleChange}
-                  />
-                </Form.Field>
+              <Form.Field>
+                <Input
+                  fluid
+                  label="About the Channel"
+                  name="channelDetails"
+                  onChange={this.handleChange}
+                />
+              </Form.Field>
+            </Form>
+          </Modal.Content>
 
-              </Form>
-            </Modal.Content>
-
-            <Modal.Actions>
-              <Button color="green" inverted onClick={this.handleSubmit}>
-                <Icon name="checkmark" /> Add
-              </Button>
-              <Button color="red" inverted onClick={this.closeModal}>
-                <Icon name="remove" /> Cancel
-              </Button>
-            </Modal.Actions>
+          <Modal.Actions>
+            <Button color="green" inverted onClick={this.handleSubmit}>
+              <Icon name="checkmark" /> Add
+            </Button>
+            <Button color="red" inverted onClick={this.closeModal}>
+              <Icon name="remove" /> Cancel
+            </Button>
+          </Modal.Actions>
         </Modal>
       </React.Fragment>
     );
   }
 }
 
-export default connect(null, { setCurrentChannel })(Channels);
+export default connect(
+  null,
+  { setCurrentChannel }
+)(Channels);

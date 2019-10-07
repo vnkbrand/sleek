@@ -3,16 +3,16 @@ body,
 .app {
   height: 100vh;
   background: #eee;
-  padding: 1m;
+  padding: 1em;
 }
 
-/* Messages */
+/* Messages.js */
 .messages {
   height: 440px;
   overflow-y: scroll;
 }
 
-/* MessageForms.js */
+/* MessageForm.js */
 .message__form {
   position: fixed !important;
   bottom: 1em;
